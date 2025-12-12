@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Gen Z Mode</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;900&family=JetBrains+Mono:wght@400;700&family=Libre+Barcode+39+Text&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* --- 1. CORE VARIABLES (RAPIH & KONSISTEN) --- */
+        :root {
+            --bg-color: #f3f4f6;
+            --surface: #ffffff;
+            --text: #18181b;
+            --border: #000000;
+            
+            /* Warna Tema Default (Gen Z) */
+            --primary: #a855f7;   /* Ungu Vivid */
+            --secondary: #bef264; /* Hijau Stabilo */
+            --accent: #f43f5e;    /* Pink Keras */
+            
+            --border-width: 3px;
+            --shadow: 5px 5px 0px var(--border);
+            --radius: 0px; /* Brutalist = No Radius */
+        }
+
+        /* TEMA HACKER */
+        [data-theme="hacker"] {
+            --bg-color: #0a0a0a;
+            --surface: #111111;
+            --text: #00ff00;
+            --border: #00ff00;
+            --primary: #003300;
+            --secondary: #008800;
+            --accent: #ccff00;
+            --shadow: 4px 4px 0px #004400;
+        }
+
+        /* TEMA BARBIE */
+        [data-theme="barbie"] {
+            --bg-color: #fff0f5;
+            --surface: #ffffff;
+            --text: #831843;
+            --border: #831843;
+            --primary: #ec4899;
+            --secondary: #fbcfe8;
+            --accent: #db2777;
+            --shadow: 5px 5px 0px #db2777;
+        }
+
+        /* --- 2. GLOBAL RESET --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            /* Dot Grid Pattern yang lebih halus */
+            background-image: radial-gradient(var(--text) 1px, transparent 1px);
+            background-size: 24px 24px;
+            padding: 30px;
+            min-height: 100vh;
+            opacity: 1; /* Biar ga flicker */
+        }
+
+        /* --- 3. UTILITY CLASSES (KOTAK-KOTAK) --- */
+        .box-style {
+            background: var(--surface);
+            border: var(--border-width) solid var(--border);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+        
+        .box-style:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px var(--border); /* Efek hover naik dikit */
+        }
+
+        /* --- 4. LAYOUT GRID --- */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 280px 1fr; /* Sidebar lebar dikit biar lega */
+            gap: 30px;
+        }
+
+        /* --- 5. SIDEBAR --- */
+        .sidebar {
+            position: sticky;
+            top: 30px;
+            height: fit-content;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .logo {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border: var(--border-width) solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .logo h2 { font-weight: 900; line-height: 1; text-transform: uppercase; font-size: 1.8rem; }
+        .logo span { font-size: 0.8rem; font-family: 'JetBrains Mono'; background: black; padding: 2px 5px; }
+
+        .menu { display: flex; flex-direction: column; gap: 12px; }
+        .menu a {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px 20px;
+            background: var(--surface);
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            border: var(--border-width) solid var(--border);
+            box-shadow: 3px 3px 0px var(--border);
+            transition: 0.1s;
+        }
+        .menu a:hover {
+            background: var(--secondary);
+            transform: translateX(5px); /* Geser kanan dikit pas hover */
+            box-shadow: 5px 5px 0px var(--border);
+        }
+        .menu a.danger { color: red; border-color: red; }
+        .menu a.danger:hover { background: red; color: white; }
+
+        .sticky-box {
+            background: #fde047;
+            padding: 15px;
+            border: var(--border-width) solid var(--border);
+            box-shadow: var(--shadow);
+            transform: rotate(-2deg); /* Miring dikit biar kayak sticky note beneran */
+            margin-top: 10px;
+            color: black;
+        }
+        .sticky-input {
+            width: 100%; background: transparent; border: none; outline: none;
+            font-family: 'JetBrains Mono'; margin-top: 10px; height: 100px; resize: none;
+            border-top: 2px dashed black; padding-top: 10px; font-size: 0.9rem;
+        }
+
+        /* --- 6. HEADER & STATS --- */
+        .header-box {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; background: var(--surface);
+        }
+        .header-title h1 { font-weight: 900; font-size: 2.5rem; text-transform: uppercase; letter-spacing: -1px; }
+        
+        .theme-toggles { display: flex; gap: 10px; border: 2px solid var(--border); padding: 5px; border-radius: 50px; background: var(--surface); }
+        .theme-dot { width: 25px; height: 25px; border-radius: 50%; border: 2px solid var(--border); cursor: pointer; }
+
+        .stats-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px; margin-bottom: 30px;
+        }
+        .stat-card { position: relative; overflow: hidden; }
+        .stat-card h3 { font-size: 0.9rem; text-transform: uppercase; opacity: 0.7; margin-bottom: 5px; font-family: 'JetBrains Mono'; }
+        .stat-card .number { font-size: 3rem; font-weight: 900; }
+        .stat-icon { position: absolute; bottom: -10px; right: -10px; font-size: 5rem; opacity: 0.1; }
+
+        /* --- 7. CHARTS & FORM --- */
+        .charts-container {
+            display: grid; grid-template-columns: 1fr 2fr; /* Pie chart lebih kecil */
+            gap: 20px; margin-bottom: 30px;
+        }
+        .chart-box h3 { border-bottom: 3px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; text-transform: uppercase; font-weight: 800; }
+        
+        .input-brutal {
+            width: 100%; padding: 12px 15px;
+            border: var(--border-width) solid var(--border);
+            background: var(--bg-color); color: var(--text);
+            font-family: 'JetBrains Mono'; font-weight: bold; outline: none;
+            transition: 0.2s;
+        }
+        .input-brutal:focus { background: var(--surface); box-shadow: 5px 5px 0px var(--primary); }
+
+        .btn-brutal {
+            width: 100%; padding: 12px;
+            background: var(--text); color: var(--bg-color);
+            border: var(--border-width) solid var(--border);
+            font-weight: 900; text-transform: uppercase; cursor: pointer;
+            font-family: 'Space Grotesk'; font-size: 1rem;
+            box-shadow: 4px 4px 0px var(--primary); /* Shadow warna primary biar pop */
+        }
+        .btn-brutal:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px var(--primary); }
+
+        /* --- 8. TABLE DESIGN --- */
+        .table-box { overflow: hidden; padding: 0 !important; } /* Reset padding box style khusus tabel */
+        .table-header { padding: 20px; border-bottom: var(--border-width) solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--secondary); color: black; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--text); color: var(--bg-color); padding: 15px; text-align: left; font-family: 'JetBrains Mono'; text-transform: uppercase; cursor: pointer; }
+        td { padding: 15px; border-bottom: 1px solid var(--border); font-weight: 600; font-family: 'JetBrains Mono'; font-size: 0.9rem; }
+        tr:hover td { background: rgba(0,0,0,0.05); }
+
+        .btn-action {
+            padding: 6px 10px; border: 2px solid var(--border); background: white; color: black;
+            cursor: pointer; text-decoration: none; display: inline-block; font-weight: bold; font-size: 0.8rem;
+        }
+        .btn-action:hover { background: var(--primary); color: white; }
+
+        /* --- 9. MODAL --- */
+        .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+        .modal-content { 
+            background-color: var(--surface); margin: 5% auto; padding: 0; 
+            border: var(--border-width) solid var(--border); width: 500px; 
+            box-shadow: 15px 15px 0px var(--primary); 
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Responsive */
+        @media screen and (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+            .sidebar { position: relative; top: 0; flex-direction: row; flex-wrap: wrap; }
+            .menu { flex-direction: row; flex-wrap: wrap; width: 100%; }
+            .charts-container { grid-template-columns: 1fr; }
+            .header-box { flex-direction: column; text-align: center; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div style="background: var(--primary); padding: 15px; border-bottom: 3px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: white; margin:0;">✏️ EDIT DATA</h2>
+                <span onclick="closeEditModal()" style="cursor:pointer; font-size:1.5rem; color:white; font-weight:bold;">&times;</span>
+            </div>
+            <div style="padding: 30px;">
+                <form action="/update" method="POST" style="display: grid; gap: 15px;">
+                    <input type="hidden" id="edit_nim_lama" name="nim_lama">
+                    <div>
+                        <label style="font-weight: bold; font-family: 'JetBrains Mono'; font-size: 0.8rem;">NOMOR INDUK</label>
+                        <input type="text" id="edit_nim" name="nim" class="input-brutal" required>
+                    </div>
+                    <div>
+                        <label style="font-weight: bold; font-family: 'JetBrains Mono'; font-size: 0.8rem;">NAMA LENGKAP</label>
+                        <input type="text" id="edit_nama" name="nama" class="input-brutal" required>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:10px;">
+                        <div>
+                            <label style="font-weight: bold; font-family: 'JetBrains Mono'; font-size: 0.8rem;">JURUSAN</label>
+                            <input type="text" id="edit_jurusan" name="jurusan" class="input-brutal" required>
+                        </div>
+                        <div>
+                            <label style="font-weight: bold; font-family: 'JetBrains Mono'; font-size: 0.8rem;">IPK</label>
+                            <input type="number" step="0.01" id="edit_ipk" name="ipk" class="input-brutal" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-weight: bold; font-family: 'JetBrains Mono'; font-size: 0.8rem;">EMAIL KAMPUS</label>
+                        <input type="email" id="edit_email" name="email" class="input-brutal" required>
+                    </div>
+                    <button type="submit" class="btn-brutal" style="margin-top:10px;">SIMPAN PERUBAHAN</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="ktmModal" class="modal">
+        <div class="modal-content" style="text-align: center; border: 4px solid var(--border);">
+            <div style="background: var(--secondary); padding: 15px; border-bottom: 3px solid var(--border); font-weight: 900;">
+                KARTU TANDA MAHASISWA
+                <span onclick="document.getElementById('ktmModal').style.display='none'" style="float:right; cursor:pointer;">&times;</span>
+            </div>
+            <div style="padding:30px; background: url('https://www.transparenttextures.com/patterns/graphy.png');">
+                <div style="width: 100px; height: 100px; background: var(--text); color: var(--bg-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto; border: 3px solid var(--border);">👾</div>
+                
+                <h1 id="modal-nama" style="text-transform:uppercase; margin-top: 20px; font-size: 1.8rem; line-height: 1.1;">NAMA</h1>
+                <div style="display:inline-block; background: var(--primary); color: white; padding: 5px 10px; font-weight: bold; margin-top: 10px; border: 2px solid var(--border);" id="modal-jurusan">JURUSAN</div>
+                
+                <div style="margin-top:20px; border: 2px dashed var(--border); padding: 15px; font-family:'JetBrains Mono'; text-align: left;">
+                    <div>NIM : <span id="modal-nim" style="font-weight: bold;"></span></div>
+                    <div>IPK : <span id="modal-ipk" style="font-weight: bold;"></span></div>
+                    <div>STS : <span style="color:green; font-weight:bold;">AKTIF</span></div>
+                </div>
+                
+                <div style="font-family:'Libre Barcode 39 Text'; font-size:3rem; margin-top:10px; opacity: 0.7;">123456789</div>
+                
+                <button onclick="window.print()" class="btn-brutal" style="margin-top: 20px;">🖨️ CETAK KARTU</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>GEN Z<br>ADMIN</h2>
+                <span style="color: white;">VER 2.0 (STABLE)</span>
+            </div>
+            <nav class="menu">
+                <a href="/dashboard"><i class="fas fa-bolt"></i> DASHBOARD</a>
+                <a href="#" onclick="startGacha()"><i class="fas fa-dice"></i> GACHA MODE</a>
+                <a href="/download" target="_blank"><i class="fas fa-file-csv"></i> DOWNLOAD CSV</a>
+                <a href="/logout" onclick="return confirm('Yakin mau cabut?')" class="danger"><i class="fas fa-power-off"></i> LOGOUT</a>
+            </nav>
+            
+            <div class="sticky-box">
+                <b style="font-size:0.8rem; display:block; border-bottom: 2px solid black; padding-bottom: 5px;">📌 STICKY NOTES:</b>
+                <textarea id="stickyInput" class="sticky-input" placeholder="Tulis pengingat disini..."></textarea>
+            </div>
+        </aside>
+
+        <main class="content">
+            <div id="flash-area">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="box-style" style="margin-bottom: 20px; background: var(--accent); color: white; display: flex; justify-content: space-between; align-items: center; padding: 15px;">
+                                <div style="font-weight: bold; text-transform: uppercase;">🔔 {{ message }}</div>
+                                <span style="cursor:pointer; font-size: 1.2rem;" onclick="this.parentElement.style.display='none'">&times;</span>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <div class="header-box box-style">
+                <div class="header-title">
+                    <p style="font-family: 'JetBrains Mono'; opacity: 0.6; font-size: 0.9rem;">Selamat datang, Admin!</p>
+                    <h1>PORTAL KAMPUS</h1>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 10px;">
+                    <div id="live-clock" style="font-weight: 900; background: var(--text); color: var(--bg-color); padding: 5px 15px; font-family: 'JetBrains Mono'; border: 2px solid var(--border);">00:00:00</div>
+                    <div class="theme-toggles">
+                        <div onclick="setTheme('default')" class="theme-dot" style="background:#bef264;" title="Gen Z"></div>
+                        <div onclick="setTheme('hacker')" class="theme-dot" style="background:#000;" title="Hacker"></div>
+                        <div onclick="setTheme('barbie')" class="theme-dot" style="background:#ec4899;" title="Barbie"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card box-style" style="background: var(--primary); color: white; border-color: var(--border);">
+                    <h3>Total Mahasiswa</h3>
+                    <div class="number">{{ total }}</div>
+                    <i class="fas fa-users stat-icon"></i>
+                </div>
+                <div class="stat-card box-style" style="background: var(--secondary);">
+                    <h3>Rata-rata IPK</h3>
+                    <div class="number">{{ rata }}</div>
+                    <i class="fas fa-chart-pie stat-icon"></i>
+                </div>
+                <div class="stat-card box-style">
+                    <h3>Mahasiswa Cumlaude</h3>
+                    <div class="number" id="count-cumlaude" style="color: var(--primary);">0</div>
+                    <i class="fas fa-medal stat-icon"></i>
+                </div>
+                <div class="stat-card box-style">
+                    <h3>Jurusan Terpopuler</h3>
+                    <div class="number" id="top-major" style="font-size: 1.5rem; word-break: break-word;">-</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-box box-style">
+                    <h3>Distribusi IPK</h3>
+                    <div style="height: 250px;"><canvas id="ipkChart"></canvas></div>
+                </div>
+                <div class="chart-box box-style">
+                    <h3>Statistik Jurusan</h3>
+                    <div style="height: 250px;"><canvas id="jurusanChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="box-style" style="margin-bottom: 30px;">
+                <h3 style="margin-bottom: 20px; font-weight: 900; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-plus-circle" style="color: var(--primary);"></i> TAMBAH MAHASISWA BARU
+                </h3>
+                <form action="/tambah" method="POST" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:15px; align-items: end;">
+                    <input type="text" name="nim" class="input-brutal" placeholder="NIM" required>
+                    <input type="text" name="nama" class="input-brutal" placeholder="NAMA LENGKAP" required>
+                    <input type="text" name="jurusan" class="input-brutal" placeholder="JURUSAN" required>
+                    <input type="number" step="0.01" name="ipk" class="input-brutal" placeholder="IPK" required>
+                    <input type="email" name="email" class="input-brutal" placeholder="EMAIL" required>
+                    <button type="submit" class="btn-brutal">SUBMIT DATA</button>
+                </form>
+            </div>
+
+            <div class="box-style table-box">
+                <div class="table-header">
+                    <div style="font-weight: 900; font-size: 1.2rem;">📂 DATABASE MAHASISWA</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="liveSearchInput" onkeyup="searchTable()" placeholder="Cari nama..." style="padding: 8px; border: 2px solid black; font-family: 'JetBrains Mono'; outline: none;">
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0)">NIM ↕</th>
+                                <th onclick="sortTable(1)">NAMA ↕</th>
+                                <th onclick="sortTable(2)">JURUSAN ↕</th>
+                                <th onclick="sortTable(3)">IPK ↕</th>
+                                <th style="text-align: right;">AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mhs in data_list %}
+                            <tr class="data-row">
+                                <td>{{ mhs.nim }}</td>
+                                <td class="mhs-nama" style="text-transform: capitalize;">{{ mhs.nama }}</td>
+                                <td class="mhs-jurusan"><span style="background: #eee; padding: 2px 6px; border: 1px solid #ccc;">{{ mhs.jurusan }}</span></td>
+                                <td class="mhs-ipk" style="color: var(--primary);">{{ mhs.ipk }}</td>
+                                <td class="no-print" style="text-align: right;">
+                                    <button onclick="openEditModal('{{ mhs.nim }}', '{{ mhs.nama }}', '{{ mhs.jurusan }}', '{{ mhs.ipk }}', '{{ mhs.email }}')" class="btn-action" title="Edit Data"><i class="fas fa-pen"></i></button>
+                                    <a href="/email/{{ mhs.nim }}" class="btn-action" onclick="return confirm('Kirim email?')" title="Email"><i class="fas fa-envelope"></i></a>
+                                    <button onclick="showIdCard('{{ mhs.nim }}', '{{ mhs.nama }}', '{{ mhs.jurusan }}', '{{ mhs.ipk }}')" class="btn-action" title="Lihat KTM"><i class="fas fa-id-card"></i></button>
+                                    <a href="/hapus/{{ mhs.nim }}" class="btn-action" onclick="return confirm('Hapus?')" style="border-color: var(--accent); color: var(--accent);" title="Hapus"><i class="fas fa-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr><td colspan="5" style="text-align: center; padding: 40px; font-weight: bold; opacity: 0.5;">(DATA MASIH KOSONG, INPUT DULU LAH)</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 1. THEME & COLORS
+        function setTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('theme', themeName);
+            renderCharts();
+        }
+        if(localStorage.getItem('theme')) setTheme(localStorage.getItem('theme'));
+
+        // 2. MODAL LOGIC
+        function openEditModal(nim, nama, jurusan, ipk, email) {
+            document.getElementById('edit_nim_lama').value = nim;
+            document.getElementById('edit_nim').value = nim;
+            document.getElementById('edit_nama').value = nama;
+            document.getElementById('edit_jurusan').value = jurusan;
+            document.getElementById('edit_ipk').value = ipk;
+            document.getElementById('edit_email').value = email;
+            document.getElementById('editModal').style.display = "block";
+        }
+        function closeEditModal() { document.getElementById('editModal').style.display = "none"; }
+
+        function showIdCard(nim, nama, jurusan, ipk) {
+            document.getElementById('modal-nama').innerText = nama; 
+            document.getElementById('modal-jurusan').innerText = jurusan;
+            document.getElementById('modal-nim').innerText = nim; 
+            document.getElementById('modal-ipk').innerText = ipk;
+            document.getElementById('ktmModal').style.display = "block";
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') event.target.style.display = "none";
+        }
+
+        // 3. GACHA
+        function startGacha() {
+            let rows = document.querySelectorAll('.data-row');
+            if(rows.length === 0) { Swal.fire('Error', 'Data kosong!', 'error'); return; }
+            let names = []; rows.forEach(r => names.push(r.querySelector('.mhs-nama').innerText));
+            Swal.fire({
+                title: '🎰 GACHA...', html: 'Siapa yang beruntung?', timer: 2000,
+                didOpen: () => { Swal.showLoading(); },
+            }).then(() => {
+                let winner = names[Math.floor(Math.random() * names.length)];
+                Swal.fire({ title: 'WINNER:', text: winner, icon: 'success' });
+                confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
+            });
+        }
+
+        // 4. UTILS
+        const stickyInput = document.getElementById('stickyInput');
+        stickyInput.value = localStorage.getItem('adminNote') || '';
+        stickyInput.addEventListener('input', () => { localStorage.setItem('adminNote', stickyInput.value); });
+
+        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('id-ID'); }, 1000);
+
+        function searchTable() {
+            var filter = document.getElementById("liveSearchInput").value.toLowerCase();
+            document.querySelectorAll('.data-row').forEach(row => {
+                let txt = row.querySelector('.mhs-nama').innerText.toLowerCase();
+                row.style.display = txt.includes(filter) ? "" : "none";
+            });
+        }
+
+        function sortTable(n) {
+            var table = document.getElementById("dataTable"), rows, switching = true, i, x, y, shouldSwitch, dir = "asc", switchcount = 0;
+            while (switching) {
+                switching = false; rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false; x = rows[i].getElementsByTagName("TD")[n]; y = rows[i + 1].getElementsByTagName("TD")[n];
+                    if (dir == "asc") { if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) { shouldSwitch = true; break; } } 
+                    else if (dir == "desc") { if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) { shouldSwitch = true; break; } }
+                }
+                if (shouldSwitch) { rows[i].parentNode.insertBefore(rows[i + 1], rows[i]); switching = true; switchcount ++; } 
+                else { if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; } }
+            }
+        }
+
+        // 5. CHARTS (Updated Colors)
+        function renderCharts() {
+            let rows = document.querySelectorAll('.data-row');
+            let majors = {}, scores = { t: 0, s: 0, r: 0 }, cumlaudeCount = 0;
+            rows.forEach(row => {
+                let jur = row.querySelector('.mhs-jurusan').innerText; 
+                let ipk = parseFloat(row.querySelector('.mhs-ipk').innerText);
+                majors[jur] = (majors[jur] || 0) + 1;
+                if(ipk >= 3.5) { scores.t++; cumlaudeCount++; } else if(ipk >= 3.0) scores.s++; else scores.r++;
+            });
+            document.getElementById('count-cumlaude').innerText = cumlaudeCount;
+            let topMajor = Object.entries(majors).sort((a,b) => b[1] - a[1])[0];
+            if(topMajor) document.getElementById('top-major').innerText = topMajor[0];
+
+            // Get Colors from CSS Vars
+            const styles = getComputedStyle(document.body);
+            const p = styles.getPropertyValue('--primary').trim();
+            const s = styles.getPropertyValue('--secondary').trim();
+            const a = styles.getPropertyValue('--accent').trim();
+            const t = styles.getPropertyValue('--text').trim();
+
+            if(window.chart1) window.chart1.destroy();
+            if(window.chart2) window.chart2.destroy();
+
+            window.chart1 = new Chart(document.getElementById('ipkChart'), { 
+                type: 'doughnut', 
+                data: { labels: ['Cumlaude', 'Aman', 'Bahaya'], datasets: [{ data: [scores.t, scores.s, scores.r], backgroundColor: [s, p, a], borderWidth: 3, borderColor: t }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: t, font: { family: 'Space Grotesk' } } } } }
+            });
+            
+            window.chart2 = new Chart(document.getElementById('jurusanChart'), { 
+                type: 'bar', 
+                data: { labels: Object.keys(majors), datasets: [{ label: 'Jumlah Mhs', data: Object.values(majors), backgroundColor: p, borderWidth: 3, borderColor: t }] }, 
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false }, ticks: { color: t } }, y: { grid: { display: false }, ticks: { color: t, font: { family: 'JetBrains Mono' } } } } } 
+            });
+        }
+        // Init
+        renderCharts();
+    </script>
+</body>
+</html>

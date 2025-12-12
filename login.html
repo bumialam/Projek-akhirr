@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - Gen Z Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f0f0f0;
+            --main: #a855f7; /* Ungu */
+            --accent: #bef264; /* Hijau Stabilo */
+            --black: #111;
+            --error: #ff4d4d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Space Grotesk', sans-serif; }
+
+        body {
+            background-color: var(--bg);
+            background-image: radial-gradient(var(--black) 1px, transparent 1px);
+            background-size: 20px 20px;
+            /* Pakai min-height biar gak kepotong di HP */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px; /* Jarak aman biar gak nempel pinggir layar HP */
+        }
+
+        .login-card {
+            background: #fff;
+            /* LOGIC RESPONSIF: */
+            width: 100%;        /* Ambil lebar penuh... */
+            max-width: 400px;   /* ...tapi mentok di 400px */
+            
+            padding: 30px;
+            border: 3px solid var(--black);
+            box-shadow: 8px 8px 0px var(--black);
+            position: relative;
+        }
+
+        .badge {
+            background: var(--accent);
+            color: var(--black);
+            padding: 5px 15px;
+            font-family: 'Space Mono', monospace;
+            font-weight: bold;
+            border: 2px solid var(--black);
+            display: inline-block;
+            margin-bottom: 20px;
+            transform: rotate(-2deg);
+            font-size: 0.85rem;
+        }
+
+        h1 { font-size: 2.2rem; line-height: 1; margin-bottom: 10px; text-transform: uppercase; }
+        p { margin-bottom: 25px; font-family: 'Space Mono', monospace; font-size: 0.9rem; color: #555; }
+
+        .input-box { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; border-left: 5px solid var(--main); padding-left: 10px; }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--black);
+            background: #ffffff;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.2s;
+            border-radius: 0; /* Biar kotak tegas di iPhone */
+            -webkit-appearance: none; /* Reset style bawaan iPhone */
+        }
+
+        input:focus {
+            background: #fff;
+            box-shadow: 4px 4px 0px var(--main);
+            transform: translate(-2px, -2px);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: var(--black);
+            color: rgb(255, 255, 255);
+            font-weight: bold;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            border: 2px solid var(--black);
+            margin-top: 10px;
+            transition: 0.1s;
+            
+            /* PENTING: Posisi relatif & z-index biar tombol gak ketutup elemen lain */
+            position: relative;
+            z-index: 10;
+        }
+
+        /* LOGIC ANTI-MACET:
+           Efek tombol geser-geser cuma aktif di Layar Besar (PC/Laptop)
+           Di HP tombolnya anteng aja biar gampang diklik.
+        */
+        @media (min-width: 768px) {
+            button:hover {
+                background: var(--main);
+                box-shadow: 5px 5px 0px var(--black);
+                transform: translate(-3px, -3px);
+                color: white;
+            }
+        }
+
+        /* Efek klik simpel buat HP */
+        button:active {
+            transform: scale(0.98);
+            background: var(--main);
+        }
+
+        .sticker { 
+            position: absolute; 
+            font-size: 2.5rem; 
+            top: -20px; 
+            right: -10px; 
+            transform: rotate(15deg); 
+            z-index: 20; /* Sticker di atas segalanya */
+            pointer-events: none; /* Sticker gak bakal ngehalangin klik */
+        }
+
+        .alert-box {
+            background: var(--error);
+            color: white;
+            padding: 10px;
+            border: 2px solid var(--black);
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="sticker">👾</div>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alert-box">
+                    <span>⚠️ {{ messages[0] }}</span>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="badge">ADMIN AREA // 2025</div>
+        <h1>Portal<br>Kampus.</h1>
+        <p>Masuk dulu bosku biar aman.</p>
+
+        <form action="/login" method="POST">
+            <div class="input-box">
+                <label>USERNAME</label>
+                <input type="text" name="username" placeholder="admin" required autocomplete="off">
+            </div>
+            <div class="input-box">
+                <label>PASSWORD</label>
+                <input type="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit">GAS MASUK 🚀</button>
+        </form>
+    </div>
+
+</body>
+</html>

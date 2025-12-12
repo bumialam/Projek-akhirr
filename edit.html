@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #f3f4f6; font-family: 'Space Mono', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .edit-box {
+            background: white; border: 3px solid #121212; padding: 40px; width: 400px;
+            box-shadow: 8px 8px 0px #121212;
+        }
+        h2 { margin-top: 0; text-transform: uppercase; background: #bef264; display: inline-block; padding: 5px; border: 2px solid black; }
+        label { display: block; margin-top: 15px; font-weight: bold; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 2px solid black; background: #fafafa; font-family: inherit; }
+        input:focus { background: #d8b4fe; outline: none; }
+        
+        .btn-group { margin-top: 25px; display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: 2px solid black; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-save { background: #121212; color: white; }
+        .btn-save:hover { background: #bef264; color: black; transform: translate(-2px, -2px); box-shadow: 3px 3px 0px black; }
+        .btn-cancel { background: white; text-decoration: none; text-align: center; color: black; display: flex; align-items: center; justify-content: center;}
+        .btn-cancel:hover { background: #f87171; }
+    </style>
+</head>
+<body>
+    <div class="edit-box">
+        <h2>EDIT DATA MAHASISWA</h2>
+        <form method="POST">
+            <label>NIM (Tidak bisa diubah)</label>
+            <input type="text" value="{{ mhs.nim }}" disabled style="background: #ddd; cursor: not-allowed;">
+            
+            <label>NAMA LENGKAP</label>
+            <input type="text" name="nama" value="{{ mhs.nama }}" required>
+            
+            <label>JURUSAN</label>
+            <input type="text" name="jurusan" value="{{ mhs.jurusan }}" required>
+            
+            <label>IPK</label>
+            <input type="number" step="0.01" name="ipk" value="{{ mhs.ipk }}" required>
+            
+            <div class="btn-group">
+                <a href="/dashboard" class="btn-cancel">BATAL</a>
+                <button type="submit" class="btn-save">SIMPAN PERUBAHAN</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
